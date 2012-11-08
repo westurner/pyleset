@@ -39,11 +39,11 @@ QUICKHASH_BLOCK_SIZE=8192
 QUICKHASH_BLOCKS_START=3
 QUICKHASH_BLOCKS_END=3
 
-HOST_UUID='cab2a442-bce3-47c1-98ea-456890fe5dfd' # 
+HOST_UUID='cab2a442-bce3-47c1-98ea-456890fe5dfd' #
 
 ATTRS_TO_INDEX=(
         #('qhash', '_qh/', None),
-    #    ('mtime', '_mt/', None), 
+    #    ('mtime', '_mt/', None),
     #    ('size', '_size/', None),
     #('name', '_nm/', None),
     #    ('type','type', None),
@@ -107,17 +107,17 @@ def provenance_decorator(func):
             g = func(*args,**kwargs)
             meta = meta.union(g.meta)
         except Exception, e:
-            raise  
+            raise
             meta.add_node('error', {
                                     'args': args,
                                     'kwargs': kwargs,
                                     'time': datetime.datetime.now(),
-                                    'msg': str(e)              
+                                    'msg': str(e)
                                 })
 
-        meta.add_node('stop', { 
-                        'time': datetime.datetime.now(), 
-                        'len': len(g) 
+        meta.add_node('stop', {
+                        'time': datetime.datetime.now(),
+                        'len': len(g)
                         })
         return g
 
@@ -129,7 +129,7 @@ class KeyStore(object):
         self.rdict = {}
         self.prefix = prefix and prefix != '_' and prefix or ''
         random.seed(seed)
-        self.chars = chars or self._get_key_chars(chars=chars) 
+        self.chars = chars or self._get_key_chars(chars=chars)
         self.length = length
         #self.keys = self._generate_key_linear(prefix=self.prefix)
 
@@ -170,10 +170,10 @@ class KeyStore(object):
                         for i in xrange(self.length))
 
         while True:
-            key = self._prefix(genkey(), prefix=prefix) 
+            key = self._prefix(genkey(), prefix=prefix)
             if key not in self.dict:
                 yield key
-        raise KeyError("max misses") 
+        raise KeyError("max misses")
 
     def _generate_key_linear(self, prefix=None, concur=False):
         if concur:
@@ -199,7 +199,7 @@ def serialize_nx_node_to_triples(g, key, node=None):
     """
 
     node = node or g and g.node.get(key) # <curie/key> # ... precis
-    
+
     yield (key, 'a', node.get('type')) # <> a <type>
 
     for attr,value in node.items():
@@ -213,9 +213,9 @@ def serialize_nx_node_to_triples(g, key, node=None):
         # = BNode(), UUID
         # = edge_url
         s = '#e/'.join((key,uuid,))
-        yield (s, 'a', 'edgetype') 
+        yield (s, 'a', 'edgetype')
         yield (s, 'linksFrom', key)
-        yield (s, 'linksTo', edge)   
+        yield (s, 'linksTo', edge)
 
         for attr, value in edge.items():
             yield (s, attr, edge.get(attr))
@@ -244,6 +244,7 @@ def walk_path_into_graph(g, path_, errors='warn'):
         try:
             #mtime, basename, size, qhash, type_ = p.mtime, p.basename(), None, None, None
             node = {'mtime': p.mtime,
+                    'ctime': p.ctime,
                     'path': path_,
                     'name':  '%s' % p.basename(),
                     'size':  p.size}
@@ -272,10 +273,10 @@ def walk_path_into_graph(g, path_, errors='warn'):
                 node = node or g.node.get(subject)
                 for attr, prefix, w in indexes:
                     value = node.get(attr)
-                    if value is not None: 
+                    if value is not None:
                         index_node_attr(g, subject, attr,
                             hasattr(value,'startswith') and value.startswith(prefix) and value
-                            or ''.join((prefix, str(value))) 
+                            or ''.join((prefix, str(value)))
                                     )
             early_index(g, key, node=node)
 
@@ -285,12 +286,12 @@ def walk_path_into_graph(g, path_, errors='warn'):
             pass
     g.node_labels, g.node_labels_rev = ks.just_indexes()
     del ks
- 
+
 
 def index_node_attr(g, node, attr, value):
     """create a node with type nodetype named value AND an edge to it"""
     if value not in g.node:
-        g.add_node(value, {'type':attr }) 
+        g.add_node(value, {'type':attr })
         log.debug('FIRST %r', value)
     else:
         log.debug('DUPE [%d] of %r', len(g.edge[value]), value)
@@ -377,7 +378,7 @@ def fmt_multiedgedict(d,sep=' '):
 def print_graph(g):
     # Iterate over graph vertexes
 
-    edge_columns = set(sorted(set(g.edge[k].get('type') for k in g))) 
+    edge_columns = set(sorted(set(g.edge[k].get('type') for k in g)))
 
     x="""
     edges_ = set(sorted(('mtime','size',)))
@@ -426,7 +427,7 @@ def diff_paths(g, p1, p2):
 def diff_dirs(g, p1, p2):
     p1 = '%s/' % p1
     p2 = '%s/' % p2
-    dir1 = set((g.node[k].get('path').replace(p1,''), g.node[k].get('qhash')) for k in g if k and g.node[k].get('path','').startswith(p1))
+    dir1 = set((g.node[k].get('path').replace(p1,''),g.node[k].get('qhash')) for k in g if k and g.node[k].get('path','').startswith(p1))
     dir2 = set((g.node[k].get('path').replace(p2,''), g.node[k].get('qhash')) for k in g if k and g.node[k].get('path','').startswith(p2))
 
     # [(normrelpath, hash), ...]
@@ -444,8 +445,8 @@ def diff_dirs(g, p1, p2):
 
     return p1, p2, removed, added, modified, unchanged, len(dir1), len(dir2)
 
-def dir_diff_to_weight(dd):
-    removed,added,modified,unchanged,p1_len,p2_len = dd
+def dir_diff_to_weight(dirdiff):
+    removed,added,modified,unchanged,p1_len,p2_len = dirdiff
     removed_len     = len(removed)
     added_len       = len(added)
     unchanged_len   = len(unchanged)
@@ -454,7 +455,7 @@ def dir_diff_to_weight(dd):
         if unchanged_len == p1_len == p2_len:
             return 1
     else:
-        return float('%.2f' % (( (added_len + removed_len) / (p1_len)) / 1.0)) 
+        return float('%.2f' % (( (added_len + removed_len) / (p1_len)) / 1.0))
 
 
 def print_dir_diff(dd):
@@ -530,7 +531,7 @@ class TestKeyStore(unittest.TestCase):
         ks = KeyStore(pfx, seed=seed)
         keys = [ks.push_value(v) for v,_k in values]
 
-        self.assertEqual(len(values), len(set(values))+1) 
+        self.assertEqual(len(values), len(set(values))+1)
         self.assertEqual(set(keys),set(ks.dict.keys()))
         self.assertEqual(keys,expected_keys)
         print ks.dict.items()
