@@ -1,4 +1,7 @@
+
 .PHONY: help clean clean-pyc clean-build list test test-all coverage docs release sdist
+
+default: help
 
 help:
 	@echo "clean-build - remove build artifacts"
@@ -10,6 +13,14 @@ help:
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
 	@echo "sdist - package"
+	@echo ""
+	@echo "install_brew - install packages with brew"
+	@echo "install_apt - install packages with apt-get"
+	@echo ""
+	@echo "install - pip install requirements and this package as editable"
+	@echo "develop - python setup.py develop"
+	@echo ""
+	@echo "requirements - rebuild pip requirements-all.txt from setup.py"
 
 clean: clean-build clean-pyc
 
@@ -54,3 +65,25 @@ sdist: clean
 	python setup.py sdist
 	python setup.py bdist_wheel upload
 	ls -l dist
+
+
+install_brew:
+	brew install pyexiv2 libmagic
+	# TODO: link into virtualenv (system-site-packages, egg-link,
+	# symlink)
+
+install_apt:
+	sudo apt-get install python-pyexiv2 libmagic
+	# TODO: link into virtualenv (system-site-packages, egg-link,
+	# symlink)
+
+install:
+	pip install -r requirements-all.txt
+	pip install -e .
+	#pip install pyleset[all]
+
+develop:
+	python setup.py develop
+
+requirements:
+	python setup.py -q requirements | tee requirements-all.txt

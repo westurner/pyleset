@@ -1,0 +1,30 @@
+
+# pip requirements file
+## system packages
+
+## structp_pics
+#$ brew install pyexiv2
+#$ apt install python-pyexiv2
+
+## tests
+tox
+pytest
+coverage
+
+## docs
+sphinx
+
+## pyleset
+structlog
+sarge
+pathlib
+
+## structp
+path.py
+networkx
+hashlib
+
+## structp_pics
+enzyme
+PyPdf2
+python-magic
