@@ -29,7 +29,7 @@ install_requires = [
 
 setup(
     name='pyleset',
-    version='0.0.1',
+    version='0.1.0',
     description='Work with filesets',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Wes Turner',
@@ -37,17 +37,22 @@ setup(
     url='https://github.com/westurner/pyleset',
     packages=[
         'pyleset',
+        'structp',
     ],
-    package_dir={'pyleset': 'pyleset'},
+    package_dir={
+        'pyleset': 'pyleset',
+        'structp': 'structp'},
     include_package_data=True,
     install_requires=install_requires,
     entry_points="""
     [console_scripts]
     pyleset = pyleset.pyleset:main
+    structp = structp.structp:main
+    structp-pics = structp.pics:main
     """,
     license='MIT',
     zip_safe=False,
-    keywords='pyleset',
+    keywords='pyleset structp',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
