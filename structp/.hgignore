@@ -1,0 +1,6 @@
+syntax:glob
+*.nxpkl
+*.pyc
+*.pyo
+*.sw?
+local/
