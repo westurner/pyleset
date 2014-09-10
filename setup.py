@@ -21,6 +21,12 @@ Documentation
 The full documentation is at http://pyleset.rtfd.org."""
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
+install_requires = [
+    'structlog',
+    'sarge',
+    '',
+]
+
 setup(
     name='pyleset',
     version='0.0.1',
@@ -34,8 +40,11 @@ setup(
     ],
     package_dir={'pyleset': 'pyleset'},
     include_package_data=True,
-    install_requires=[
-    ],
+    install_requires=install_requires,
+    entry_points="""
+    [console_scripts]
+    pyleset = pyleset.pyleset:main
+    """,
     license='MIT',
     zip_safe=False,
     keywords='pyleset',
