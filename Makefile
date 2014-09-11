@@ -1,5 +1,11 @@
 
-.PHONY: help clean clean-pyc clean-build list test test-all coverage docs release sdist
+.PHONY: help clean clean-pyc clean-build list test test-all coverage docs \
+	release sdist \
+	install_apt install_brew install \
+	install-from-pypi install-from-pypi-all \
+	develop \
+	install-from-source install-from-source-all \
+	requirements test-requirements 
 
 default: help
 
@@ -18,15 +24,23 @@ help:
 	@echo "install_apt - install packages with apt-get"
 	@echo ""
 	@echo "install - pip install requirements and this package as editable"
-	@echo "develop - python setup.py develop"
+	@echo "install-from-pypi - pip install pyleset"
+	@echo "install-from-pypi-all - pip install pyleset[all]"
 	@echo ""
-	@echo "requirements - rebuild pip requirements-all.txt from setup.py"
+	@echo ""
+	@echo "develop - python setup.py develop"
+	@echo "install-from-source - pip install -e"
+	@echo "install-from-source-all - clone, install all requirements from source, install"
+	@echo ""
+	@echo "requirements - regenerate ./requirements/ requirements.txt files"
+	@echo "test-requirements - test requirements.txt generation commands"
 
 clean: clean-build clean-pyc
 
 clean-build:
 	rm -fr build/
 	rm -fr dist/
+	rm -fr requirements_test/
 	rm -fr *.egg-info
 
 clean-pyc:
@@ -37,13 +51,8 @@ clean-pyc:
 lint:
 	flake8 pyleset test
 
-test:
+test: test-requirements
 	py.test
-
-test-requirements:
-	rm -rf ./requirements_test/
-	python setup.py requirements_test
-	ls -al ./requirements_test/
 
 test-all:
 	tox
@@ -83,14 +92,41 @@ install_apt:
 	# symlink)
 
 install:
-	pip install -r requirements-all.txt
-	pip install -e .
-	#pip install pyleset[all]
+	## Either
+	#$(MAKE) install_brew
+	#$(MAKE) install_apt
+
+	## Either
+	#$(MAKE) install-from-source
+	#$(MAKE) install-from-source-all
+	#$(MAKE) install-from-pypi
+	#$(MAKE) install-from-pypi-all
+
+
+install-from-source:
+	pip install -e https://github.com/westurner/pyleset#egg=pyleset
+
+install-from-source-all:
+	( cd $(VIRTUAL_ENV)/src;  \
+		git clone https://github.com/westurner/pyleset; \
+		cd pyleset; \
+		pip install -r requirements/requirements.dev.txt; \
+		pip install -r requirements/requirements-test.dev.txt; \
+		pip install -e . )
+
+install-from-pypi:
+	pip install pyleset
+
+install-from-pypi-all:
+	pip install pyleset[all]
 
 develop:
 	python setup.py develop
 
+test-requirements:
+	rm -rf ./requirements_test/
+	python setup.py requirements_test
+	ls -al ./requirements_test/
 
-.PHONY : requirements
 requirements:
 	python setup.py requirements
