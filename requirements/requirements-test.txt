@@ -1,0 +1,11 @@
+########################################################################
+#### pip requirements file
+### pip packages
+
+## tests
+pytest
+coverage
+
+## docs
+sphinx
+
