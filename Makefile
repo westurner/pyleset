@@ -1,4 +1,7 @@
 
+APPNAME="pyleset"
+HTTPS_URI="https://github.com/westurner/$(APPNAME)"
+
 .PHONY: help clean clean-pyc clean-build list test test-all coverage docs \
 	release sdist \
 	install_apt install_brew install \
@@ -24,8 +27,8 @@ help:
 	@echo "install_apt - install packages with apt-get"
 	@echo ""
 	@echo "install - pip install requirements and this package as editable"
-	@echo "install-from-pypi - pip install pyleset"
-	@echo "install-from-pypi-all - pip install pyleset[all]"
+	@echo "install-from-pypi - pip install $(APPNAME)"
+	@echo "install-from-pypi-all - pip install $(APPNAME)[all]"
 	@echo ""
 	@echo ""
 	@echo "develop - python setup.py develop"
@@ -40,7 +43,6 @@ clean: clean-build clean-pyc
 clean-build:
 	rm -fr build/
 	rm -fr dist/
-	rm -fr requirements_test/
 	rm -fr *.egg-info
 
 clean-pyc:
@@ -49,7 +51,7 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 lint:
-	flake8 pyleset test
+	flake8 $(APPNAME) test
 
 test: test-requirements
 	py.test
@@ -58,15 +60,15 @@ test-all:
 	tox
 
 coverage:
-	coverage run --source pyleset setup.py test
+	coverage run --source $(APPNAME) setup.py test
 	coverage report -m
 	coverage html
 	open htmlcov/index.html
 
 docs:
-	rm -f docs/pyleset.rst
+	rm -f docs/$(APPNAME).rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ pyleset
+	sphinx-apidoc -o docs/ $(APPNAME)
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	open docs/_build/html/index.html
@@ -102,31 +104,30 @@ install:
 	#$(MAKE) install-from-pypi
 	#$(MAKE) install-from-pypi-all
 
-
 install-from-source:
-	pip install -e https://github.com/westurner/pyleset#egg=pyleset
+	pip install -e "git+$(HTTPS_URI)#egg=$(APPNAME)"
 
 install-from-source-all:
 	( cd $(VIRTUAL_ENV)/src;  \
-		git clone https://github.com/westurner/pyleset; \
-		cd pyleset; \
+		git clone $(HTTPS_URL); \
+		cd $(APPNAME); \
 		pip install -r requirements/requirements.dev.txt; \
 		pip install -r requirements/requirements-test.dev.txt; \
 		pip install -e . )
 
 install-from-pypi:
-	pip install pyleset
+	pip install $(APPNAME)
 
 install-from-pypi-all:
-	pip install pyleset[all]
+	pip install $(APPNAME)[all]
 
 develop:
 	python setup.py develop
 
 test-requirements:
-	rm -rf ./requirements_test/
+	rm -rf ./build/requirements_test/
 	python setup.py requirements_test
-	ls -al ./requirements_test/
+	ls -al ./build/requirements_test/
 
 requirements:
 	python setup.py requirements

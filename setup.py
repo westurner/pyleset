@@ -550,7 +550,7 @@ class TestRequirementsTxt(object):
         output
 
     def test_30_write_pip_requirements_dir(self):
-        path = 'requirements_test'
+        path = 'build/requirements_test'
         requirements = REQUIREMENTS
         test_requirements = TEST_REQUIREMENTS
         packages = PACKAGES
