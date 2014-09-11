@@ -7,15 +7,6 @@
 
 
 ### pip packages
-## pyleset
-structlog
-sarge
-pathlib
-
-## structp
-path.py
-networkx
-
 ## structp_pics
 enzyme
 PyPdf2

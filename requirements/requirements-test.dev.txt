@@ -1,11 +1,11 @@
 ########################################################################
 #### pip requirements file
 ### pip packages
-
 ## tests
 -e hg+https://bitbucket.org/hpk42/pytest#egg=pytest
 -e hg+https://bitbucket.org/ned/coveragepy#egg=coverage
 
 ## docs
 -e hg+https://bitbucket.org/birkenfeld/sphinx#egg=sphinx
+
 

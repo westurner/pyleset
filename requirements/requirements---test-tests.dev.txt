@@ -2,10 +2,7 @@
 #### pip requirements file
 ### pip packages
 ## tests
-pytest
-coverage
-
-## docs
-sphinx
+-e hg+https://bitbucket.org/hpk42/pytest#egg=pytest
+-e hg+https://bitbucket.org/ned/coveragepy#egg=coverage
 
 

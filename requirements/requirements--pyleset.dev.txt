@@ -1,0 +1,9 @@
+########################################################################
+#### pip requirements file
+### pip packages
+## pyleset
+-e git+https://github.com/hynek/structlog#egg=structlog
+-e hg+https://bitbucket.org/vinay.sajip/sarge#egg=sarge
+pathlib
+
+

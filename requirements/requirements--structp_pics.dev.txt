@@ -7,15 +7,6 @@
 
 
 ### pip packages
-## pyleset
--e git+https://github.com/hynek/structlog#egg=structlog
--e hg+https://bitbucket.org/vinay.sajip/sarge#egg=sarge
-pathlib
-
-## structp
--e git+https://github.com/jaraco/path.py#egg=path.py
--e git+https://github.com/networkx/networkx#egg=networkx
-
 ## structp_pics
 -e git+https://github.com/Diaoul/enzyme#egg=enzyme
 -e git+https://github.com/mstamy2/PyPDF2#egg=PyPdf2

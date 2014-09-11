@@ -40,6 +40,11 @@ lint:
 test:
 	py.test
 
+test-requirements:
+	rm -rf ./requirements_test/
+	python setup.py requirements_test
+	ls -al ./requirements_test/
+
 test-all:
 	tox
 
@@ -85,5 +90,7 @@ install:
 develop:
 	python setup.py develop
 
+
+.PHONY : requirements
 requirements:
-	python setup.py -q requirements | tee requirements-all.txt
+	python setup.py requirements

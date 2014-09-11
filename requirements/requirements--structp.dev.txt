@@ -1,0 +1,8 @@
+########################################################################
+#### pip requirements file
+### pip packages
+## structp
+-e git+https://github.com/jaraco/path.py#egg=path.py
+-e git+https://github.com/networkx/networkx#egg=networkx
+
+

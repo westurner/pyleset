@@ -1,11 +1,8 @@
 ########################################################################
 #### pip requirements file
 ### pip packages
-## tests
-pytest
-coverage
-
-## docs
-sphinx
+## structp
+path.py
+networkx
 
 

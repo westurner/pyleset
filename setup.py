@@ -22,6 +22,7 @@ Documentation
 -------------
 
 The full documentation is at http://pyleset.rtfd.org."""
+DOCLINK = ""
 HISTORY = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 # requirements.txt
@@ -33,7 +34,7 @@ try:
 except ImportError:
     OrderedDict = dict
 
-REQUIREMENT_FIELDS = ('name', 'version', 'vcs', 'editable')
+REQUIREMENT_FIELDS = ('name', 'editable', 'version', 'vcs')
 _Requirement = collections.namedtuple('Requirement', REQUIREMENT_FIELDS)
 
 
@@ -109,33 +110,33 @@ class Requirement(_Requirement):
         return None
 
 
-PACKAGES = (
-    ('structp_pics', {'brew': 'pyexiv2', 'apt': 'python-pyexiv2'}),
-)
+PACKAGES = [
+    ('structp_pics', {'brew': 'pyexiv2', 'apt-get': 'python-pyexiv2'}),
+]
 
 REQUIREMENTS = (
     ('pyleset', [
         Requirement('structlog',
-                    editable='https://github.com/hynek/structlog'),
+                    'https://github.com/hynek/structlog'),
         Requirement('sarge',
-                    vcs='hg',
-                    editable='https://bitbucket.org/vinay.sajip/sarge'),
+                    'https://bitbucket.org/vinay.sajip/sarge',
+                     vcs='hg'),
         Requirement('pathlib',
-                    editable='https://bitbucket.org/pitrou/pathlib'),
+                    'https://bitbucket.org/pitrou/pathlib'),
     ]),
     ('structp', [
         Requirement('path.py',
-                    editable='https://github.com/jaraco/path.py'),
+                    'https://github.com/jaraco/path.py'),
         Requirement('networkx',
-                    editable='https://github.com/networkx/networkx'),
+                    'https://github.com/networkx/networkx'),
     ]),
     ('structp_pics', [
         Requirement('enzyme',
-                    editable='https://github.com/Diaoul/enzyme'),
+                    'https://github.com/Diaoul/enzyme'),
         Requirement('PyPdf2',
-                    editable='https://github.com/mstamy2/PyPDF2'),
+                    'https://github.com/mstamy2/PyPDF2'),
         Requirement('python-magic',
-                    editable='https://github.com/ahupp/python-magic'),
+                    'https://github.com/ahupp/python-magic'),
     ]),
 )
 
@@ -143,19 +144,20 @@ TEST_REQUIREMENTS = (
     ('tests', [
         # Requirement('tox'),
         Requirement('pytest',
-                    vcs='hg',
-                    editable='https://bitbucket.org/hpk42/pytest'),
+                    'https://bitbucket.org/hpk42/pytest',
+                    vcs='hg'),
         Requirement('coverage',
+                    'https://bitbucket.org/ned/coveragepy',
                     vcs='hg',
-                    editable='https://bitbucket.org/ned/coveragepy',
-                    # git_editable='https://github.com/nedbat/coveragepy' #
+                    # git_'https://github.com/nedbat/coveragepy' #
                     # mirror
                     ),
     ]),
     ('docs', [
         Requirement('sphinx',
+                    'https://bitbucket.org/birkenfeld/sphinx',
                     vcs='hg',
-                    editable='https://bitbucket.org/birkenfeld/sphinx'),
+                    ),
     ]),
 )
 
@@ -211,23 +213,27 @@ class RequirementsMap():
         return OrderedDict(_to_dict(requirements))
 
     @staticmethod
-    def _write_packages_txt(pkgs):
+    def generate_packages_txt(pkgs):
         """
         Generate a commented pip requirements header for system packages
 
         Yields:
             str: text lines
         """
+        if not pkgs:
+            return
         yield '### system packages'
         for key, packages in pkgs:
             if key != 'all':
-                yield ''
                 yield ('## %s' % key)
-                for pkgmgr, _pkgs in packages.items():  # TODO TODO
-                    yield "#$ %s install %s" % (pkgmgr, _pkgs)
+                if packages:
+                    for pkgmgr, _pkgs in packages.items():  # TODO TODO
+                        yield "#$ %s install %s" % (pkgmgr, _pkgs)
+                    yield ''
+        yield ''
 
     @staticmethod
-    def _write_requirements(reqs, editable=False):
+    def generate_requirements_txt(reqs, editable=False):
         """
         Generate pip requirements for a requirements.txt file
 
@@ -237,16 +243,19 @@ class RequirementsMap():
         Yields:
             str: text lines
         """
+        if not reqs:
+            return
         requirement_func = Requirement.pip_requirement_version_str
         if editable:
             requirement_func = Requirement.pip_requirement_editable_str
         yield "### pip packages"
         for key, requirements in reqs:
             if key != 'all':
-                yield ''
-                yield ("## %s" % key)
-                for req in requirements:
-                    yield requirement_func(req)
+                if requirements:
+                    yield ("## %s" % key)
+                    for req in requirements:
+                        yield requirement_func(req)
+                    yield ''
 
     @classmethod
     def write_requirements(cls, reqs=None, pkgs=None, editable=False):
@@ -264,19 +273,18 @@ class RequirementsMap():
         yield "#"*72
         yield "#### pip requirements file"
         if pkgs:
-            for line in cls._write_packages_txt(pkgs):
+            for line in cls.generate_packages_txt(pkgs):
                 yield line
         if reqs:
-            for line in cls._write_requirements(reqs, editable=editable):
+            for line in cls.generate_requirements_txt(reqs, editable=editable):
                 yield line
         yield ""
 
     @classmethod
-    def print_requirements(cls,
-                               reqs=None,
-                               pkgs=None,
-                               editable=False,
-                               file=sys.stdout):
+    def print_requirements(
+        cls,
+        reqs=None, pkgs=None, editable=False,
+            file=sys.stdout, tee=False):
         """
         Print requirements.txt to the specified file (sys.stdout by default)
 
@@ -294,12 +302,15 @@ class RequirementsMap():
                 pkgs=pkgs,
                 editable=editable):
             print(line, file=file)
+            if tee and file is not sys.stdout:
+                print(line, file=sys.stdout)
 
     @classmethod
     def write_requirements_dir(cls, path,
                                test_requirements=None,
                                requirements=None,
-                               pkgs=None):
+                               packages=None,
+                               tee=False):
         """
         Write a directory of requirements/requirements[-name][.dev].txt files
 
@@ -317,29 +328,79 @@ class RequirementsMap():
         if not os.path.exists(path):
             os.makedirs(path)
 
+        requirements = requirements or {}
+        #requirements_dict = OrderedDict(requirements)
+
+        packages = packages or {}
+        try:
+            packages_dict = OrderedDict(packages)
+        except ValueError:
+            print(packages)
+            packages_dict = OrderedDict(*list(packages))
+            raise
+
         # requirements.txt
         filename = os.path.join(path, 'requirements.txt')
+        print("writing: %s" % filename)
         with codecs.open(filename, 'w', encoding='utf-8') as f:
-            cls.print_requirements(requirements, file=f)
+            cls.print_requirements(
+                requirements, packages, file=f, tee=tee)
 
         # requirements.dev.txt
+        print("writing: %s" % filename)
         filename = os.path.join(path, 'requirements.dev.txt')
         with codecs.open(filename, 'w', encoding='utf-8') as f:
-            cls.print_requirements(requirements, editable=True, file=f)
+            cls.print_requirements(
+                requirements, packages, editable=True, file=f, tee=tee)
 
         # requirements-test.txt
         filename = os.path.join(path, 'requirements-test.txt')
+        print("writing: %s" % filename)
         with codecs.open(filename, 'w', encoding='utf-8') as f:
-            cls.print_requirements(test_requirements, file=f)
+            cls.print_requirements(
+                test_requirements, file=f, tee=tee)
 
         # requirements-test.dev.txt
         filename = os.path.join(path, 'requirements-test.dev.txt')
+        print("writing: %s" % filename)
         with codecs.open(filename, 'w', encoding='utf-8') as f:
-            cls.print_requirements(test_requirements, editable=True, file=f)
+            cls.print_requirements(
+                test_requirements, editable=True, file=f, tee=tee)
 
-        # foreach section
+        file_pairs = (
+            ('', requirements),
+            ('-test-', test_requirements))
+
         # requirements[-name][-section][-dev].txt
-        # cls.print_requirements(section,
+        for name, requirements_variable in file_pairs:
+            for section, _requirements in requirements_variable:
+                _section_packages = packages_dict.get(section, {})
+                if _section_packages:
+                    _packages = (
+                        (section, _section_packages),)
+                else:
+                    _packages = tuple()
+                __requirements = (
+                    (section, _requirements),)
+
+                filename = os.path.join(
+                    path, 'requirements--%s%s.txt' % (name, section))
+                print("writing: %s" % filename)
+                with codecs.open(filename, 'w', encoding='utf-8') as f:
+                    cls.print_requirements(
+                        __requirements, _packages, file=f, tee=tee)
+
+                filename = os.path.join(
+                    path, 'requirements--%s%s.dev.txt' % (name, section))
+                print("writing: %s" % filename)
+                with codecs.open(filename, 'w', encoding='utf-8') as f:
+                    cls.print_requirements(
+                        __requirements,
+                        _packages,
+                        editable=True,
+                        file=f,
+                        tee=tee)
+
         return path
 
 
@@ -348,6 +409,7 @@ TESTS_REQUIRE, EXTRAS_REQUIRE = RequirementsMap.get_requirements(
 
 
 class TestRequirementsTxt(object):
+
     """
     Test Requirements and RequirementsMap functionality
     """
@@ -369,9 +431,10 @@ class TestRequirementsTxt(object):
             except Exception as e:
                 print('### ERROR')
                 print(e)
-                print(__import__('traceback').format_exc())
                 if stop_on_error:
                     raise
+                else:
+                    print(__import__('traceback').format_exc())
                 pass
             finally:
                 print("### </%s>" % attr)
@@ -428,21 +491,21 @@ class TestRequirementsTxt(object):
         assert r.version is None
         assert r.vcs is None
         assert r.editable is None
-        r = Requirement('pyleset', '==0.1.0')
+        r = Requirement('pyleset', version='==0.1.0')
         print(r)
         assert r
         assert r.name == 'pyleset'
         assert r.version == '==0.1.0'
         assert r.vcs is None
         assert r.editable is None
-        r = Requirement('pyleset', '==0.1.0', 'git', editable_url)
+        r = Requirement('pyleset', editable_url, '==0.1.0', 'git')
         print(r)
         assert r
         assert r.name == 'pyleset'
         assert r.version == '==0.1.0'
         assert r.vcs == 'git'
         assert r.editable == editable_url
-        r = Requirement('pyleset', '==0.1.0', editable=editable_url)
+        r = Requirement('pyleset', editable_url, '==0.1.0')
         print(r)
         assert r
         assert r.name == 'pyleset'
@@ -452,7 +515,7 @@ class TestRequirementsTxt(object):
 
     def test_11_Requirement_strings(self):
         editable_url = self.EDITABLE_URL
-        r = Requirement('pyleset', '==0.1.0', editable=editable_url)
+        r = Requirement('pyleset', editable_url, '==0.1.0')
         print(r)
         assert r
         _str = r.pip_requirement_str()
@@ -495,7 +558,8 @@ class TestRequirementsTxt(object):
             path,
             test_requirements=test_requirements,
             requirements=requirements,
-            pkgs=packages)
+            packages=packages,
+            tee=True)
         assert output
 
 
@@ -520,7 +584,7 @@ class RequirementsCommand(Command):
             'requirements',
             test_requirements=TEST_REQUIREMENTS,
             requirements=REQUIREMENTS,
-            pkgs=PACKAGES)
+            packages=PACKAGES)
 
 
 class RequirementsTestCommand(Command):

@@ -5,7 +5,4 @@
 pytest
 coverage
 
-## docs
-sphinx
-
 
