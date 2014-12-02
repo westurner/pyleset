@@ -3,6 +3,7 @@
 pyleset/setup.py
 """
 from __future__ import print_function
+import codecs
 import os
 import sys
 
@@ -85,13 +86,13 @@ class Requirement(_Requirement):
     @staticmethod
     def determine_vcs(url):
         """
-        Guess which version constrol system a URL points to
+        Guess which VCS a URL points to
 
         Args:
             url (str): URL to an editable repository
 
         Returns:
-            str or None: vcs name (git, hg, bzr, svn)
+            str or None: vcs name (``git``, ``hg``, ``bzr``, ``svn``, ``cvs``)
         """
         if not url:
             return None
@@ -105,7 +106,7 @@ class Requirement(_Requirement):
         if scheme in ('https', 'http'):
             if host.endswith('github.com'):
                 return 'git'
-        if scheme in ('git', 'hg', 'bzr', 'svn'):
+        if scheme in ('git', 'hg', 'bzr', 'svn', 'cvs'):
             return scheme
         return None
 
@@ -235,7 +236,7 @@ class RequirementsMap():
     @staticmethod
     def generate_requirements_txt(reqs, editable=False):
         """
-        Generate pip requirements for a requirements.txt file
+        Generate a documented requirements.txt file
 
         Args:
             reqs (dict): {'section': [Requirement,]}
@@ -260,31 +261,33 @@ class RequirementsMap():
     @classmethod
     def write_requirements(cls, reqs=None, pkgs=None, editable=False):
         """
-        Generate a pip requirements.txt for specified requiremnts and packages
+        Generate a pip requirements.txt for specified requirements and packages
 
-        Args:
+        Keyword Arguments:
             reqs (dict): {'section': [Requirement,]}
             pkgs (dict): {'section': {'pkgmgr': 'pkgname',}}
             editable (bool): write editable package strings (if possible)
 
         Yields:
-            str: text lines
+            str: requirements.txt text blocks (possibly containing newlines)
         """
         yield "#"*72
         yield "#### pip requirements file"
         if pkgs:
-            for line in cls.generate_packages_txt(pkgs):
-                yield line
+            for block in cls.generate_packages_txt(pkgs):
+                yield block
         if reqs:
-            for line in cls.generate_requirements_txt(reqs, editable=editable):
-                yield line
+            for block in cls.generate_requirements_txt(reqs, editable=editable):
+                yield block
         yield ""
 
     @classmethod
-    def print_requirements(
-        cls,
-        reqs=None, pkgs=None, editable=False,
-            file=sys.stdout, tee=False):
+    def print_requirements(cls,
+                            reqs=None,
+                            pkgs=None,
+                            editable=False,
+                            file=sys.stdout,
+                            tee=False):
         """
         Print requirements.txt to the specified file (sys.stdout by default)
 
@@ -316,6 +319,8 @@ class RequirementsMap():
 
         Args:
             path (str): path to create and write requirements.txt files into
+
+        Keyword Arguments:
             test_requirements (dict): {'section': [Requirement,]}
             requirements (dict): {'section': [Requirement,]}
             pkgs (dict): {'section': {'pkgmgr': 'pkgname',}}
@@ -323,8 +328,6 @@ class RequirementsMap():
         Returns:
             str: path to directory
         """
-        import codecs
-        import os
         if not os.path.exists(path):
             os.makedirs(path)
 
